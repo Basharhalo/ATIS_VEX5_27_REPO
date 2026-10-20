@@ -14,9 +14,6 @@ using namespace vex;
 // A global instance of competition
 competition Competition;
 
-
-
-
 // Function and device definitions
 
 // Brain and Controller
@@ -24,15 +21,15 @@ brain Brain;
 controller Controller1 = controller(primary);
 
 // Drivetrain Motors
-motor DT_leftMotor = motor(PORT1, ratio18_1, false);   
+motor DT_leftMotor = motor(PORT1, ratio18_1, false);
 motor DT_rightMotor = motor(PORT2, ratio18_1, true);
 
 // Claw Grip Motors
-motor ClawGrip1_leftMotor = motor(PORT3, ratio18_1, false);
-motor ClawGrip2_rightMotor = motor(PORT4, ratio18_1, true);
+motor ClawGrip1_upperMotor = motor(PORT3, ratio36_1, false);
+motor ClawGrip2_bottomMotor = motor(PORT4, ratio36_1, true);
 
-// Claw Arm Motors
-motor ClawArm = motor(PORT5, ratio18_1, false);
+// Claw Arm Motor
+motor ClawArm = motor(PORT5, ratio36_1, false);
 
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
@@ -44,7 +41,8 @@ motor ClawArm = motor(PORT5, ratio18_1, false);
 /*  not every time that the robot is disabled.                               */
 /*---------------------------------------------------------------------------*/
 
-void pre_auton(void) {
+void pre_auton(void)
+{
 
   // All activities that occur before the competition starts
   // Example: clearing encoders, setting servo positions, ...
@@ -60,64 +58,72 @@ void pre_auton(void) {
 /*  You must modify the code to add your own robot specific commands here.   */
 /*---------------------------------------------------------------------------*/
 
-void autonomous(void) {
+void autonomous(void)
+{
   // ..........................................................................
   // Insert autonomous user code here.
   // ..........................................................................
 }
 
-/*---------------------------------------------------------------------------*/
-/*                                                                           */
-/*                              User Control Task                            */
-/*                                                                           */
-/*  This task is used to control your robot during the user control phase of */
-/*  a VEX Competition.                                                       */
-/*                                                                           */
-/*  You must modify the code to add your own robot specific commands here.   */
-/*---------------------------------------------------------------------------*/
 
-void usercontrol(void) {
-// User control code here, inside the loop
-  while (1) {
-    // Left joystick for turning and driving (Setting up values) 
+void usercontrol(void)
+{
+  // User control code here, inside the loop
+  while (1)
+  {
+    // Left joystick for turning and driving (Setting up values)
     int forwardSpeed = Controller1.Axis3.position();
-    int turnSpeed = Controller1.Axis1.position();
+    int turnSpeed = Controller1.Axis4.position();
 
     // Left joystick for turning and driving | Left Joystick
     DT_leftMotor.spin(forward, forwardSpeed + turnSpeed, percent);
     DT_rightMotor.spin(forward, forwardSpeed - turnSpeed, percent);
 
+// ------------------------------------------------------------------------------------
+
     // Right joystick for controlling arm length | Right Joystick
-    int armSpeed = Controller1.Axis2.position();
-    ClawArm.spin(forward, armSpeed, percent);
+    int armspeed = Controller1.Axis2.position();
     
-    // Controls the 2 Claw Grips | R1 R2 L1 L2
+    if (abs(armspeed) > 5)
+    {
+    ClawArm.spin(forward, armspeed, percent);
+    }
+      else
+     {
+       ClawArm.stop(hold);
+     }
+// ------------------------------------------------------------------------------------
+
+    // Controls  Claw Grip 1 | R1 R2
     if (Controller1.ButtonR1.pressing())
-     {
-     ClawGrip1_leftMotor.spin(forward, 80, percent);
-     }
-     else if (Controller1.ButtonR2.pressing())
-     {
-      ClawGrip1_leftMotor.spin(reverse, 80, percent);
-     }
-     else
-     {
-      ClawGrip1_leftMotor.stop(hold);
-     }
+    {
+      ClawGrip1_upperMotor.spin(forward, 80, percent);
+    }
+      else if (Controller1.ButtonR2.pressing())
+      {
+        ClawGrip1_upperMotor.spin(reverse, 80, percent);
+      }
+         else
+        {
+         ClawGrip1_upperMotor.stop(hold);
+        }
 
-     if (Controller1.ButtonL1.pressing())
-     {
-     ClawGrip2_rightMotor.spin(forward, 80, percent);
-     }
-     else if (Controller1.ButtonL2.pressing())
-     {
-      ClawGrip2_rightMotor.spin(reverse, 80, percent);
-     }
-     else
-     {
-      ClawGrip2_rightMotor.stop(hold);
-     }
+// ------------------------------------------------------------------------------------
+    // Controls  Claw Grip 2 | L1 L2
 
+    if (Controller1.ButtonL1.pressing())
+      {
+      ClawGrip2_bottomMotor.spin(forward, 80, percent);
+      }
+       else if (Controller1.ButtonL2.pressing())
+      {
+        ClawGrip2_bottomMotor.spin(reverse, 80, percent);
+      }
+         else
+        {
+         ClawGrip2_bottomMotor.stop(hold);
+        }
+// ------------------------------------------------------------------------------------
     wait(20, msec); // Sleep the task to prevent wasted resources.
   }
 }
@@ -125,7 +131,8 @@ void usercontrol(void) {
 //
 // Main will set up the competition functions and callbacks.
 //
-int main() {
+int main()
+{
   // Set up callbacks for autonomous and driver control periods.
   Competition.autonomous(autonomous);
   Competition.drivercontrol(usercontrol);
@@ -134,7 +141,8 @@ int main() {
   pre_auton();
 
   // Prevent main from exiting with an infinite loop.
-  while (true) {
+  while (true)
+  {
     wait(100, msec);
   }
 }
