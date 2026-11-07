@@ -21,15 +21,15 @@ brain Brain;
 controller Controller1 = controller(primary);
 
 // Drivetrain Motors
-motor DT_leftMotor = motor(PORT1, ratio18_1, false);
-motor DT_rightMotor = motor(PORT2, ratio18_1, true);
+motor DT_leftMotor = motor(PORT1, ratio18_1, true);
+motor DT_rightMotor = motor(PORT2, ratio18_1, false);
 
-// Claw Grip Motors
-motor ClawGrip1_upperMotor = motor(PORT3, ratio36_1, false);
-motor ClawGrip2_bottomMotor = motor(PORT4, ratio36_1, true);
+// Claw Grip Motor
+motor ClawGrip1_upperMotor = motor(PORT4, ratio36_1, false);
 
 // Claw Arm Motor
-motor ClawArm = motor(PORT5, ratio36_1, false);
+motor ClawArm = motor(PORT3, ratio36_1, true);
+motor ClawArm_2 = motor(PORT6, ratio36_1, true);
 
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
@@ -73,29 +73,19 @@ void usercontrol(void)
   {
     // Left joystick for turning and driving (Setting up values)
     int forwardSpeed = Controller1.Axis3.position();
-    int turnSpeed = Controller1.Axis4.position();
+    int turnSpeed = Controller1.Axis1.position();
 
     // Left joystick for turning and driving | Left Joystick
-    DT_leftMotor.spin(forward, forwardSpeed + turnSpeed, percent);
-    DT_rightMotor.spin(forward, forwardSpeed - turnSpeed, percent);
+    int leftPower =  forwardSpeed - turnSpeed;
+    int rightPower = forwardSpeed + turnSpeed;
 
-// ------------------------------------------------------------------------------------
+    DT_leftMotor.spin(forward, leftPower, percent);
+    DT_rightMotor.spin(forward, rightPower, percent);
 
-    // Right joystick for controlling arm length | Right Joystick
-    int armspeed = Controller1.Axis2.position();
-    
-    if (abs(armspeed) > 5)
-    {
-    ClawArm.spin(forward, armspeed, percent);
-    }
-      else
-     {
-       ClawArm.stop(hold);
-     }
 // ------------------------------------------------------------------------------------
 
     // Controls  Claw Grip 1 | R1 R2
-    if (Controller1.ButtonR1.pressing())
+    if (Controller1.ButtonL2.pressing())
     {
       ClawGrip1_upperMotor.spin(forward, 80, percent);
     }
@@ -109,19 +99,22 @@ void usercontrol(void)
         }
 
 // ------------------------------------------------------------------------------------
-    // Controls  Claw Grip 2 | L1 L2
+    // Controls  Claw arm | L1 L2
 
-    if (Controller1.ButtonL1.pressing())
+    if (Controller1.ButtonR1.pressing())
       {
-      ClawGrip2_bottomMotor.spin(forward, 80, percent);
+      ClawArm.spin(forward, 100, percent);
+      ClawArm_2.spin(forward, 70, percent);
       }
-       else if (Controller1.ButtonL2.pressing())
+       else if (Controller1.ButtonL1.pressing())
       {
-        ClawGrip2_bottomMotor.spin(reverse, 80, percent);
+        ClawArm.spin(reverse, 100, percent);
+        ClawArm_2.spin(reverse, 70, percent);
       }
          else
         {
-         ClawGrip2_bottomMotor.stop(hold);
+         ClawArm.stop(hold);
+         ClawArm_2.stop(hold);
         }
 // ------------------------------------------------------------------------------------
     wait(20, msec); // Sleep the task to prevent wasted resources.
